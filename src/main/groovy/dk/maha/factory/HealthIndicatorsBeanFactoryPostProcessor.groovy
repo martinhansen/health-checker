@@ -1,6 +1,6 @@
 package dk.maha.factory
 
-import dk.maha.indicators.AsyncIndicator
+import dk.maha.indicators.ApiHealthIndicator
 import org.apache.commons.lang.StringUtils
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
@@ -22,7 +22,7 @@ class HealthIndicatorsBeanFactoryPostProcessor implements BeanDefinitionRegistry
     void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         urls.each { url ->
             String beanName = 'healthCheck@'+url.host
-            BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(AsyncIndicator.class).setLazyInit(true)
+            BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(ApiHealthIndicator.class).setLazyInit(true)
             builder.addConstructorArgValue(url)
             registry.registerBeanDefinition(beanName, builder.getBeanDefinition())
         }
