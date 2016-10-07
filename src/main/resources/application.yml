@@ -1,0 +1,9 @@
+endpoints:
+  enabled: false
+  # enable /health endpoint
+  health:
+    enabled: true
+management:
+  health:
+    defaults:
+      enabled: false
