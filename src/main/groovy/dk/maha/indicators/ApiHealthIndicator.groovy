@@ -5,8 +5,11 @@ import org.apache.commons.logging.LogFactory
 import org.apache.http.client.config.RequestConfig
 import org.apache.http.config.SocketConfig
 import org.apache.http.impl.client.HttpClients
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.actuate.health.HealthIndicator
+
+import javax.annotation.PostConstruct
 
 import static groovyx.net.http.Method.GET
 
@@ -17,14 +20,23 @@ class ApiHealthIndicator implements HealthIndicator {
     private RESTClient client
     private URL url;
 
+    @Value('${httpClient.socketTimeout}')
+    int httpClientSocketTimeout
+
+    @Value('${httpClient.connectionTimeout}')
+    int httpClientConnectionTimeout
+
     ApiHealthIndicator(URL url) {
         this.client = new RESTClient(url)
-        def timeout = 2000
-        SocketConfig sc = SocketConfig.custom().setSoTimeout(timeout).build()
-        RequestConfig rc = RequestConfig.custom().setConnectTimeout(timeout).setSocketTimeout(timeout).build()
+        this.url = url
+    }
+
+    @PostConstruct
+    def init() {
+        SocketConfig sc = SocketConfig.custom().setSoTimeout(httpClientSocketTimeout).build()
+        RequestConfig rc = RequestConfig.custom().setConnectTimeout(httpClientConnectionTimeout).setSocketTimeout(httpClientSocketTimeout).build()
         def hc = HttpClients.custom().setDefaultSocketConfig(sc).setDefaultRequestConfig(rc).build()
         this.client.client = hc
-        this.url = url
     }
 
     @Override
@@ -36,6 +48,7 @@ class ApiHealthIndicator implements HealthIndicator {
                 getResponse().failure = { resp -> resp }
             }
         } catch (InterruptedIOException | IOException e) {
+            log.warn("Health indicator error: " + e)
             return Health.outOfService()
                     .build()
         }
