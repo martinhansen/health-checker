@@ -2,6 +2,9 @@ package dk.maha.indicators
 
 import groovyx.net.http.RESTClient
 import org.apache.commons.logging.LogFactory
+import org.apache.http.client.config.RequestConfig
+import org.apache.http.config.SocketConfig
+import org.apache.http.impl.client.HttpClients
 import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.actuate.health.HealthIndicator
 
@@ -16,6 +19,11 @@ class ApiHealthIndicator implements HealthIndicator {
 
     ApiHealthIndicator(URL url) {
         this.client = new RESTClient(url)
+        def timeout = 2000
+        SocketConfig sc = SocketConfig.custom().setSoTimeout(timeout).build()
+        RequestConfig rc = RequestConfig.custom().setConnectTimeout(timeout).setSocketTimeout(timeout).build()
+        def hc = HttpClients.custom().setDefaultSocketConfig(sc).setDefaultRequestConfig(rc).build()
+        this.client.client = hc
         this.url = url
     }
 
